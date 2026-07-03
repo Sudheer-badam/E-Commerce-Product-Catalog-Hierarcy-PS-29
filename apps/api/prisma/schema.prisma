@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductKind {
+  PHYSICAL
+  DIGITAL
+  SUBSCRIPTION
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  price       Float
+  image       String
+  category    String
+  description String?
+  stock       Int         @default(0)
+  
+  // Discriminator
+  kind        ProductKind
+
+  // Specific to Physical
+  weight        String?
+  deliveryCharge Float?
+
+  // Specific to Digital
+  licenseKey    String?
+  downloadUrl   String?
+
+  // Specific to Subscription
+  renewalPeriod String? // e.g. "Monthly", "Yearly"
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Order {
+  id                   String   @id @default(cuid())
+  customerId           String
+  items                Json     // Array of items { id, quantity, price }
+  totalAmount          Float
+  paymentStatus        String   @default("Pending") // Pending, Paid, Rejected
+  orderStatus          String   @default("Pending") // Pending, Confirmed, Shipped, Delivered
+  paymentScreenshotUrl String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  sender    String   // 'Customer' or 'Admin'
+  text      String
+  room      String   @default("support_room")
+  createdAt DateTime @default(now())
+}
