@@ -15,25 +15,30 @@ export default function AdminInvoiceModal({ order, onClose, onSend }: { order: a
   const downloadPdf = () => {
     const element = document.getElementById('invoice-content');
     if (element) {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = element.outerHTML;
+      wrapper.style.position = 'absolute';
+      wrapper.style.top = '0';
+      wrapper.style.left = '0';
+      wrapper.style.width = '600px';
+      wrapper.style.zIndex = '-1000';
+      wrapper.style.backgroundColor = '#0f0f13';
+      document.body.appendChild(wrapper);
+
       const opt = {
         margin:       10,
         filename:     `ShopSmart-Invoice-${order.id.substr(0, 8).toUpperCase()}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-          scale: 2, 
-          useCORS: true, 
-          backgroundColor: '#0f0f13', 
-          scrollY: 0, 
-          scrollX: 0,
-          windowWidth: element.scrollWidth,
-          windowHeight: element.scrollHeight
-        },
+        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0f0f13' },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       if ((window as any).html2pdf) {
-        (window as any).html2pdf().set(opt).from(element).save();
+        (window as any).html2pdf().set(opt).from(wrapper).save().then(() => {
+          document.body.removeChild(wrapper);
+        });
       } else {
         alert('PDF generator is loading... Please try again in a few seconds.');
+        document.body.removeChild(wrapper);
       }
     }
   };
