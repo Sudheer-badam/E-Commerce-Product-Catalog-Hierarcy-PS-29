@@ -8,6 +8,7 @@ import ClockIST from '../components/ClockIST';
 import WebLogoutButton from '../components/WebLogoutButton';
 import Script from 'next/script';
 import SplashScreen from '../components/SplashScreen';
+import MobileMenu from '../components/MobileMenu';
 
 export const metadata: Metadata = {
   title: 'ShopSmart – Discover Amazing Products',
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <NotificationInbox />
                 <UserMenu />
                 <WebLogoutButton />
+                <MobileMenu />
               </div>
             </div>
           </nav>

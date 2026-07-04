@@ -125,13 +125,20 @@ export default function SplashScreen() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
               { name: 'BOTTA SASIKIRAN', id: '2300032014' },
-              { name: 'BADAM SUDHEER REDDY', id: '2300033278' },
+              { name: 'BADAM SUDHEER REDDY', id: '2300033278', role: 'TEAM LEAD' },
               { name: 'THOTA SHYAM', id: '2300032351' },
               { name: 'KONKIMALLA SHANMUKH SAI', id: '2300030955' }
             ].map((member, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 40, borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingBottom: i < 3 ? 12 : 0 }}>
-                <span style={{ fontSize: 16, fontWeight: 700, color: '#F0EEE8' }}>{member.name}</span>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#F59E0B', background: 'rgba(245,158,11,0.1)', padding: '4px 12px', borderRadius: 99 }}>{member.id}</span>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingBottom: i < 3 ? 12 : 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: '#F0EEE8' }}>{member.name}</span>
+                  {member.role && (
+                    <span style={{ fontSize: 10, fontWeight: 800, color: '#0D0D0F', background: '#4ADE80', padding: '3px 8px', borderRadius: 99, letterSpacing: '0.05em' }}>
+                      {member.role}
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#F59E0B', background: 'rgba(245,158,11,0.1)', padding: '4px 12px', borderRadius: 99, flexShrink: 0 }}>{member.id}</span>
               </div>
             ))}
           </div>
