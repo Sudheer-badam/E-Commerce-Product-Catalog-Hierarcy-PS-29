@@ -25,7 +25,7 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('http://localhost:8080/orders');
+      const res = await fetch('https://shop-smart-api-production.up.railway.app/orders');
       const data = await res.json();
       setOrders(data);
     } catch (e) { console.error(e); }
@@ -39,7 +39,7 @@ export default function OrdersPage() {
 
   const approvePayment = async (id: string) => {
     try {
-      await fetch(`http://localhost:8080/orders/${id}/status`, {
+      await fetch(`https://shop-smart-api-production.up.railway.app/orders/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Paid' })
@@ -50,7 +50,7 @@ export default function OrdersPage() {
 
   const rejectPayment = async (id: string) => {
     try {
-      await fetch(`http://localhost:8080/orders/${id}/status`, {
+      await fetch(`https://shop-smart-api-production.up.railway.app/orders/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Rejected' })
@@ -61,14 +61,14 @@ export default function OrdersPage() {
 
   const dispatchOrder = async (id: string) => {
     try {
-      await fetch(`http://localhost:8080/orders/${id}/dispatch`, { method: 'PATCH' });
+      await fetch(`https://shop-smart-api-production.up.railway.app/orders/${id}/dispatch`, { method: 'PATCH' });
       setOrders(o => o.map(order => order.id === id ? { ...order, orderStatus: 'Shipped' } : order));
     } catch (e) { console.error(e); }
   };
 
   const sendInvoice = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:8080/orders/${id}/send-invoice`, { method: 'POST' });
+      const res = await fetch(`https://shop-smart-api-production.up.railway.app/orders/${id}/send-invoice`, { method: 'POST' });
       if (res.ok) {
         setToast('✅ Invoice sent to customer!');
         setTimeout(() => setToast(''), 3000);
