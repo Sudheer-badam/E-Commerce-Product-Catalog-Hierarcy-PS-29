@@ -15,18 +15,49 @@ export default function AdminInvoiceModal({ order, onClose, onSend }: { order: a
   const downloadPdf = () => {
     const element = document.getElementById('invoice-content');
     if (element) {
-      const htmlString = element.outerHTML;
-      const opt = {
-        margin:       10,
-        filename:     `ShopSmart-Invoice-${order.id.substr(0, 8).toUpperCase()}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0f0f13' },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      if ((window as any).html2pdf) {
-        (window as any).html2pdf().set(opt).from(htmlString).save();
-      } else {
-        alert('PDF generator is loading... Please try again in a few seconds.');
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.top = '-10000px';
+      iframe.style.width = '800px';
+      iframe.style.height = '2000px';
+      document.body.appendChild(iframe);
+      
+      const doc = iframe.contentWindow?.document;
+      if (doc) {
+        doc.open();
+        doc.write(`
+          <html>
+            <head>
+              <style>
+                body { margin: 0; padding: 20px; background: #0f0f13; font-family: sans-serif; }
+                * { box-sizing: border-box; }
+              </style>
+            </head>
+            <body>
+              ${element.outerHTML}
+            </body>
+          </html>
+        `);
+        doc.close();
+
+        const opt = {
+          margin:       10,
+          filename:     `ShopSmart-Invoice-${order.id.substr(0, 8).toUpperCase()}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0f0f13', scrollY: 0 },
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        if ((window as any).html2pdf) {
+          setTimeout(() => {
+            (window as any).html2pdf().set(opt).from(doc.body.children[0]).save().then(() => {
+              document.body.removeChild(iframe);
+            });
+          }, 300);
+        } else {
+          alert('PDF generator is loading... Please try again in a few seconds.');
+          document.body.removeChild(iframe);
+        }
       }
     }
   };
