@@ -156,17 +156,21 @@ export default function NotificationInbox() {
         `);
         doc.close();
 
-        const opt = {
-          margin:       10,
-          filename:     `ShopSmart-Invoice-${invoice.shortId}.pdf`,
-          image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0f0f13', scrollY: 0 },
-          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
         if ((window as any).html2pdf) {
           setTimeout(() => {
-            (window as any).html2pdf().set(opt).from(doc.body.children[0]).save().then(() => {
+            const invoiceElement = doc.body.children[0] as HTMLElement;
+            const w = invoiceElement.offsetWidth;
+            const h = invoiceElement.offsetHeight;
+
+            const opt = {
+              margin:       0,
+              filename:     `ShopSmart-Invoice-${invoice.shortId}.pdf`,
+              image:        { type: 'jpeg', quality: 1 },
+              html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0f0f13', scrollY: 0, windowWidth: w, windowHeight: h },
+              jsPDF:        { unit: 'px', format: [w, h], orientation: 'portrait' }
+            };
+
+            (window as any).html2pdf().set(opt).from(invoiceElement).save().then(() => {
               document.body.removeChild(iframe);
             });
           }, 300);
