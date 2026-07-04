@@ -143,7 +143,15 @@ export default function NotificationInbox() {
         margin:       10,
         filename:     `ShopSmart-Invoice-${invoice.shortId}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0f0f13', scrollY: 0, scrollX: 0 },
+        html2canvas:  { 
+          scale: 2, 
+          useCORS: true, 
+          backgroundColor: '#0f0f13', 
+          scrollY: 0, 
+          scrollX: 0,
+          windowWidth: clone.scrollWidth,
+          windowHeight: clone.scrollHeight
+        },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       if ((window as any).html2pdf) {
