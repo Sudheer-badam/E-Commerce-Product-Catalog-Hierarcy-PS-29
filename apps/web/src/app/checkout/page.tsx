@@ -43,7 +43,7 @@ export default function CheckoutPage() {
       const addressStr = [address.address, address.pincode].filter(v => v && v !== 'N/A').join(', ') || 'N/A';
       const customerStr = `${address.name || user?.name || 'N/A'} | ${address.phone || 'N/A'} | ${selectedMethodName} | ADDR:${addressStr}${txnSuffix}`;
       
-      const res = await fetch('http://localhost:8080/orders', {
+      const res = await fetch('https://shop-smart-api-production.up.railway.app/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -58,14 +58,14 @@ export default function CheckoutPage() {
 
       // If customer clicked "I've Paid", auto-mark as Paid immediately
       if (autoMarkPaid) {
-        const statusRes = await fetch(`http://localhost:8080/orders/${order.id}/status`, {
+        const statusRes = await fetch(`https://shop-smart-api-production.up.railway.app/orders/${order.id}/status`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'Paid' })
         });
         if (!statusRes.ok) throw new Error('Status update failed');
       } else if (screenshot) {
-        await fetch(`http://localhost:8080/orders/${order.id}/payment-screenshot`, {
+        await fetch(`https://shop-smart-api-production.up.railway.app/orders/${order.id}/payment-screenshot`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ screenshotUrl: screenshot })

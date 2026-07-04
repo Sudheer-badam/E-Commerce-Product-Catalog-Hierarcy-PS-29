@@ -95,7 +95,7 @@ export default function NotificationInbox() {
   }, [playChime]);
 
   useEffect(() => {
-    const socket = io('http://localhost:8080');
+    const socket = io('https://shop-smart-api-production.up.railway.app');
     socketRef.current = socket;
 
     socket.on('connect', () => {

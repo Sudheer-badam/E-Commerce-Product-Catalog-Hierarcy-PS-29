@@ -18,7 +18,7 @@ export default function ProductDetailsPage({ params }: { params: { id: string } 
   const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
-    fetch(`http://localhost:8080/products`)
+    fetch(`https://shop-smart-api-production.up.railway.app/products`)
       .then(res => res.json())
       .then(data => {
         const found = data.find((p: any) => p.id === params.id);

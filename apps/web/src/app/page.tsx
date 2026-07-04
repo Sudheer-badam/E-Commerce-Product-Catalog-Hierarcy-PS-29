@@ -12,7 +12,7 @@ const KIND_META: Record<string, { icon: string; color: string; label: string }> 
 export default async function HomePage() {
   let products: any[] = [];
   try {
-    const res = await fetch('http://localhost:8080/products', { cache: 'no-store' });
+    const res = await fetch('https://shop-smart-api-production.up.railway.app/products', { cache: 'no-store' });
     if (res.ok) products = await res.json();
   } catch (e) {
     console.error('Failed to fetch products:', e);

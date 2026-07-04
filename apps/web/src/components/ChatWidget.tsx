@@ -9,7 +9,7 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    const newSocket = io('http://localhost:8080');
+    const newSocket = io('https://shop-smart-api-production.up.railway.app');
     setSocket(newSocket);
 
     newSocket.emit('join_room', 'support_room');
