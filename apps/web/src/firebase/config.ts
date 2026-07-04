@@ -2,13 +2,13 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDp9NSh5SgRkbvku-1Q7Vg7ScvhJNfYbpY",
-  authDomain: "e-commerce-product-catalog.firebaseapp.com",
-  projectId: "e-commerce-product-catalog",
-  storageBucket: "e-commerce-product-catalog.firebasestorage.app",
-  messagingSenderId: "863822935089",
-  appId: "1:863822935089:web:66298b4aca370d313e1110",
-  measurementId: "G-DKCPZ5EE7G"
+  apiKey: "AIzaSyAZh9yubYHJINb_MftQOKmENcWtaLawZEs",
+  authDomain: "e-commerce-product-catal-aca51.firebaseapp.com",
+  projectId: "e-commerce-product-catal-aca51",
+  storageBucket: "e-commerce-product-catal-aca51.firebasestorage.app",
+  messagingSenderId: "1062815821441",
+  appId: "1:1062815821441:web:9cc592e8fb07aae7172780",
+  measurementId: "G-84F9Z7C8NK"
 };
 
 // Initialize Firebase (prevent re-initialization in Next.js hot reloads)
