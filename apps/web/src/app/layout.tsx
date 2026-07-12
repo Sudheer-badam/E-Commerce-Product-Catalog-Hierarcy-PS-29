@@ -9,6 +9,7 @@ import WebLogoutButton from '../components/WebLogoutButton';
 import Script from 'next/script';
 import SplashScreen from '../components/SplashScreen';
 import MobileMenu from '../components/MobileMenu';
+import GlobalWatermark from '../components/GlobalWatermark';
 
 export const metadata: Metadata = {
   title: 'ShopSmart – Discover Amazing Products',
@@ -31,7 +32,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
       </head>
-      <body style={{ background: 'var(--bg-base)', minHeight: '100vh' }}>
+      <body style={{ background: 'var(--bg-base)', minHeight: '100vh', position: 'relative' }}>
+        {/* Global Video Watermark Background Component */}
+        <GlobalWatermark />
+        {/* Overlay to balance watermark visibility and content readability */}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(250,248,245,0.72)', zIndex: -9, pointerEvents: 'none' }} />
+
         <Script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" strategy="lazyOnload" />
         <AuthProvider>
           <SplashScreen />
@@ -47,7 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               <a href="/" className="flex items-center gap-3 flex-shrink-0 no-underline">
                 <img src="/logo.png" alt="ShopSmart Logo" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'contain', background: '#fff', padding: '2px', border: '2px solid var(--amber)' }} />
-                <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 20, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+                <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 20, color: '#000000', letterSpacing: '-0.03em' }}>
                   Shop<span className="gradient-text">Smart</span>
                 </span>
                 <div className="hidden sm:block ml-4">
@@ -66,13 +72,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex items-center gap-3">
                 {/* Search */}
                 <div className="hidden lg:flex items-center gap-2 rounded-xl px-4 py-2 text-sm" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', minWidth: 220 }}>
-                  <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                   </svg>
                   <input
                     placeholder="Search products..."
                     className="bg-transparent outline-none flex-1 text-sm"
-                    style={{ color: 'var(--text-primary)' }}
+                    style={{ color: '#000000' }}
                   />
                 </div>
 
@@ -101,7 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.03em', marginBottom: 8 }}>
                   Shop<span className="gradient-text">Smart</span>
                 </div>
-                <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.7 }}>
+                <p style={{ color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.7 }}>
                   Your one-stop premium marketplace for physical, digital & subscription products.
                 </p>
               </div>
@@ -114,7 +120,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <p className="label-upper mb-4">{col.title}</p>
                   <div className="space-y-2">
                     {col.items.map(item => (
-                      <a key={item} href="#" style={{ display: 'block', color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none' }}>
+                      <a key={item} href="#" style={{ display: 'block', color: 'var(--text-primary)', fontSize: 13, textDecoration: 'none' }}>
                         {item}
                       </a>
                     ))}
@@ -122,7 +128,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               ))}
             </div>
-            <div style={{ borderTop: '1px solid var(--border)', padding: '16px 24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+            <div style={{ borderTop: '1px solid var(--border)', padding: '16px 24px', textAlign: 'center', color: 'var(--text-primary)', fontSize: 12 }}>
               © 2025 ShopSmart. All rights reserved. Built with Next.js, NestJS & Neon PostgreSQL.
             </div>
           </footer>

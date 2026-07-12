@@ -16,7 +16,8 @@ export default function MobileMenu() {
     <div className="md:hidden flex items-center ml-2">
       <button 
         onClick={() => setOpen(!open)}
-        className="btn-ghost p-2 rounded-xl border border-white/10"
+        className="btn-ghost p-2 rounded-xl border border-default"
+        style={{ color: 'var(--text-primary)' }}
         aria-label="Menu"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,13 +30,16 @@ export default function MobileMenu() {
       </button>
 
       {open && (
-        <div className="absolute top-16 left-0 w-full glass border-b border-white/10 shadow-2xl z-50 p-4 flex flex-col gap-2 animate-slide-up">
+        <div className="absolute top-16 left-0 w-full glass border-b shadow-2xl z-50 p-4 flex flex-col gap-2 animate-slide-up" style={{ borderColor: 'var(--border)' }}>
           {NAV_LINKS.map(link => (
             <Link 
               key={link.href} 
               href={link.href} 
               onClick={() => setOpen(false)}
-              className="text-lg font-semibold text-white px-4 py-3 rounded-xl hover:bg-white/10 transition-colors"
+              className="text-lg font-semibold px-4 py-3 rounded-xl transition-colors"
+              style={{ color: 'var(--text-primary)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.03)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
             >
               {link.label}
             </Link>

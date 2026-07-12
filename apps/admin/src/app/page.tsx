@@ -48,14 +48,78 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const approvePayment = async (id: string) => {
+  const getCustomerEmail = (customerId: string) => {
+    const parts = customerId.split(' | ');
+    const emailPart = parts.find(p => p.startsWith('EMAIL:'));
+    return emailPart ? emailPart.replace('EMAIL:', '').trim() : null;
+  };
+
+  const buildEmailTemplate = (title: string, body: string) => `
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #eaeaea; border-radius: 12px; overflow: hidden;">
+      <!-- Header -->
+      <div style="background: #000000; padding: 24px; text-align: center;">
+        <img src="https://shopsmart-catalog.vercel.app/logo.png" alt="ShopSmart Logo" style="width: 54px; height: 54px; border-radius: 50%; object-fit: contain; background: #fff; padding: 3px; border: 2px solid #C5A059; margin-bottom: 12px; display: inline-block;" />
+        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">
+          Shop<span style="color: #C5A059;">Smart</span>
+        </h1>
+        <p style="margin: 5px 0 0; color: #a0a0a0; font-size: 14px;">Premium E-Commerce Platform</p>
+      </div>
+      <!-- Body -->
+      <div style="padding: 32px 24px; color: #333333; line-height: 1.6; font-size: 16px;">
+        <h2 style="color: #111111; font-size: 22px; margin-top: 0; margin-bottom: 20px;">${title}</h2>
+        ${body}
+      </div>
+      <!-- Footer -->
+      <div style="background: #f8f8f8; padding: 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="margin: 0; color: #888888; font-size: 12px;">
+          © ${new Date().getFullYear()} ShopSmart. All rights reserved.<br/>
+          This is an automated message, please do not reply directly to this email.
+        </p>
+      </div>
+    </div>
+  `;
+
+  const sendEmail = async (to: string, subject: string, html: string) => {
+    if (!to || to === 'N/A') return;
     try {
-      await fetch(`https://shop-smart-api-production.up.railway.app/orders/${id}/status`, {
+      const urls = ['https://shop-smart-api-production.up.railway.app', 'http://127.0.0.1:8080'];
+      for (const base of urls) {
+        try {
+          const res = await fetch(`${base}/mail/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to, subject, html })
+          });
+          if (res.ok) break;
+        } catch (e) {
+          // try next URL
+        }
+      }
+    } catch (e) { console.error('Failed to send email:', e); }
+  };
+
+  const approvePayment = async (order: any) => {
+    try {
+      await fetch(`https://shop-smart-api-production.up.railway.app/orders/${order.id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Paid' })
       });
-      setOrders(o => o.map(order => order.id === id ? { ...order, paymentStatus: 'Paid', orderStatus: 'Confirmed' } : order));
+      setOrders(o => o.map(o => o.id === order.id ? { ...o, paymentStatus: 'Paid', orderStatus: 'Confirmed' } : o));
+      
+      const email = getCustomerEmail(order.customerId);
+      if (email) {
+        const body = `
+          <p>Thank you for your payment!</p>
+          <p>Your payment for <strong>Order #${order.id.substr(0, 8).toUpperCase()}</strong> has been verified.</p>
+          <p>Your order is now confirmed and is being processed.</p>
+          <div style="background: #f4f1ea; padding: 16px; border-radius: 8px; margin: 24px 0; border: 1px solid #e5e7eb;">
+            <p style="margin: 0; font-size: 14px; color: #555;">Total Amount Paid</p>
+            <p style="margin: 5px 0 0; font-size: 24px; font-weight: bold; color: #111;">₹${order.totalAmount.toFixed(2)}</p>
+          </div>
+        `;
+        await sendEmail(email, 'Your Order is Confirmed! 🎉', buildEmailTemplate('Payment Verified', body));
+      }
     } catch (e) { console.error(e); }
   };
 
@@ -70,19 +134,46 @@ export default function AdminDashboard() {
     } catch (e) { console.error(e); }
   };
 
-  const dispatchOrder = async (id: string) => {
+  const dispatchOrder = async (order: any) => {
     try {
-      await fetch(`https://shop-smart-api-production.up.railway.app/orders/${id}/dispatch`, { method: 'PATCH' });
-      setOrders(o => o.map(order => order.id === id ? { ...order, orderStatus: 'Shipped' } : order));
+      await fetch(`https://shop-smart-api-production.up.railway.app/orders/${order.id}/dispatch`, { method: 'PATCH' });
+      setOrders(o => o.map(o => o.id === order.id ? { ...o, orderStatus: 'Shipped' } : o));
+      
+      const email = getCustomerEmail(order.customerId);
+      if (email) {
+        const body = `
+          <p>Great news!</p>
+          <p>Your <strong>Order #${order.id.substr(0, 8).toUpperCase()}</strong> has been dispatched and is on its way to you.</p>
+          <p>We'll notify you once it's out for delivery. Thank you for shopping with us!</p>
+        `;
+        await sendEmail(email, 'Your Order has been Dispatched! 📦', buildEmailTemplate('Order Dispatched', body));
+      }
     } catch (e) { console.error(e); }
   };
 
-  const sendInvoice = async (id: string) => {
+  const sendInvoice = async (order: any) => {
     try {
-      const res = await fetch(`https://shop-smart-api-production.up.railway.app/orders/${id}/send-invoice`, { method: 'POST' });
+      const res = await fetch(`https://shop-smart-api-production.up.railway.app/orders/${order.id}/send-invoice`, { method: 'POST' });
       if (res.ok) {
         setToast('✅ Invoice sent to customer!');
         setTimeout(() => setToast(''), 3000);
+        
+        const email = getCustomerEmail(order.customerId);
+        if (email) {
+          const body = `
+            <p>Thank you for shopping with ShopSmart. Please find the details of your invoice for order <strong>#${order.id.substr(0, 8).toUpperCase()}</strong> below:</p>
+            <div style="background: #f4f1ea; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 24px 0;">
+              <h3 style="margin-top: 0; color: #111; font-size: 16px;">Order Summary</h3>
+              <ul style="padding-left: 20px; color: #333; line-height: 1.8;">
+                ${order.items.map((i: any) => `<li>${i.name} <strong>x ${i.quantity}</strong></li>`).join('')}
+              </ul>
+              <hr style="border: 0; border-top: 1px solid #d1d5db; margin: 16px 0;" />
+              <p style="margin: 0; font-size: 16px;"><strong>Total Paid:</strong> <span style="color: #16a34a; font-size: 18px;">₹${order.totalAmount.toFixed(2)}</span></p>
+            </div>
+            <p>You can download the full PDF invoice directly from your account dashboard on our website.</p>
+          `;
+          await sendEmail(email, `Invoice for Order #${order.id.substr(0, 8).toUpperCase()} 📄`, buildEmailTemplate('Your Invoice is Ready', body));
+        }
       }
     } catch (e) { console.error(e); }
   };
@@ -92,7 +183,7 @@ export default function AdminDashboard() {
       <AdminInvoiceModal 
         order={selectedInvoiceOrder} 
         onClose={() => setSelectedInvoiceOrder(null)} 
-        onSend={sendInvoice} 
+        onSend={(order) => sendInvoice(order)} 
       />
       {toast && (
         <div style={{ position: 'fixed', top: 32, right: 32, zIndex: 100, background: '#4ADE80', color: '#0D0D0F', padding: '12px 24px', borderRadius: 12, fontWeight: 700, boxShadow: '0 8px 32px rgba(74,222,128,0.3)', animation: 'slide-up 0.3s ease-out' }}>
@@ -248,7 +339,7 @@ export default function AdminDashboard() {
                   <td style={{ padding: '14px 20px' }}>
                     {order.paymentStatus === 'Pending' && order.paymentScreenshotUrl ? (
                       <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={() => approvePayment(order.id)}
+                        <button onClick={() => approvePayment(order)}
                           className="btn-primary" style={{ fontSize: 12, padding: '6px 14px' }}>
                           ✓ Approve
                         </button>
@@ -261,7 +352,7 @@ export default function AdminDashboard() {
                       <span style={{ fontSize: 12, color: '#FB923C' }}>Awaiting screenshot</span>
                     ) : order.orderStatus === 'Confirmed' ? (
                       <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
-                        <button onClick={() => dispatchOrder(order.id)}
+                        <button onClick={() => dispatchOrder(order)}
                           className="btn-primary" style={{ fontSize: 12, padding: '6px 14px', background: 'var(--amber)', color: '#0D0D0F' }}>
                           📦 Dispatch Item
                         </button>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function AdminInvoiceModal({ order, onClose, onSend }: { order: any, onClose: () => void, onSend: (id: string) => void }) {
+export default function AdminInvoiceModal({ order, onClose, onSend }: { order: any, onClose: () => void, onSend: (order: any) => void }) {
   if (!order) return null;
 
   const parts = order.customerId.split(' | ');
@@ -149,7 +149,7 @@ export default function AdminInvoiceModal({ order, onClose, onSend }: { order: a
         </div>
 
         <div style={{ display: 'flex', gap: 12, flexDirection: 'column' }}>
-          <button onClick={() => { onSend(order.id); onClose(); }}
+          <button onClick={() => { onSend(order); onClose(); }}
             style={{
               padding: '12px', borderRadius: 12, fontWeight: 700, fontSize: 13,
               background: '#4ADE80', color: '#0D0D0F', cursor: 'pointer', border: 'none'

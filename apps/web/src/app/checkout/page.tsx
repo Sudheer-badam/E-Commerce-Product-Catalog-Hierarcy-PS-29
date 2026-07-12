@@ -41,7 +41,7 @@ export default function CheckoutPage() {
       const selectedMethodName = UPI_METHODS.find(m => m.id === payMethod)?.label || payMethod;
       const txnSuffix = txnRef ? ` | TXN:${txnRef}` : '';
       const addressStr = [address.address, address.pincode].filter(v => v && v !== 'N/A').join(', ') || 'N/A';
-      const customerStr = `${address.name || user?.name || 'N/A'} | ${address.phone || 'N/A'} | ${selectedMethodName} | ADDR:${addressStr}${txnSuffix}`;
+      const customerStr = `${address.name || user?.name || 'N/A'} | ${address.phone || 'N/A'} | ${selectedMethodName} | ADDR:${addressStr}${txnSuffix} | EMAIL:${user?.email || 'N/A'}`;
       
       const res = await fetch('https://shop-smart-api-production.up.railway.app/orders', {
         method: 'POST',
@@ -56,7 +56,6 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error('Order creation failed');
       const order = await res.json();
 
-      // If customer clicked "I've Paid", auto-mark as Paid immediately
       if (autoMarkPaid) {
         const statusRes = await fetch(`https://shop-smart-api-production.up.railway.app/orders/${order.id}/status`, {
           method: 'PATCH',
@@ -88,22 +87,21 @@ export default function CheckoutPage() {
     }
   };
 
-
   return (
-    <div className="min-h-screen py-12 px-6 animate-fade-in">
+    <div className="min-h-screen py-12 px-6 animate-fade-in relative z-10">
       <div className="max-w-4xl mx-auto">
 
         {/* Steps Indicator */}
         <div className="flex items-center justify-center mb-12">
           {STEPS.map((s, i) => (
             <React.Fragment key={s}>
-              <div className={`flex items-center gap-2 ${i <= step ? 'text-indigo-400' : 'text-gray-600'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${i < step ? 'bg-indigo-600 border-indigo-600 text-white' : i === step ? 'border-indigo-500 text-indigo-400' : 'border-gray-700 text-gray-600'}`}>
+              <div className={`flex items-center gap-2 ${i <= step ? 'text-[#111111]' : 'text-[#6B7280]'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${i < step ? 'bg-[#16a34a] border-[#16a34a] text-white' : i === step ? 'border-[#C5A059] text-[#C5A059]' : 'border-[#D1D5DB] text-[#9CA3AF]'}`}>
                   {i < step ? '✓' : i + 1}
                 </div>
-                <span className="text-sm font-medium">{s}</span>
+                <span className="text-sm font-bold">{s}</span>
               </div>
-              {i < STEPS.length - 1 && <div className={`flex-1 h-px mx-4 ${i < step ? 'bg-indigo-600' : 'bg-gray-800'}`}/>}
+              {i < STEPS.length - 1 && <div className={`flex-1 h-px mx-4 ${i < step ? 'bg-[#16a34a]' : 'bg-[#E5E7EB]'}`}/>}
             </React.Fragment>
           ))}
         </div>
@@ -115,9 +113,9 @@ export default function CheckoutPage() {
 
             {/* Step 1: Delivery */}
             {step === 0 && (
-              <div className="glass-card animate-slide-up">
-                <h2 className="text-2xl font-bold text-white mb-6">📍 Delivery Address</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="animate-slide-up rounded-3xl p-8" style={{ background: '#FFFFFF', border: '1.5px solid rgba(0,0,0,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
+                <h2 className="text-2xl font-black text-[#111111] mb-6">📍 Delivery Address</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {[
                     { key: 'name', label: 'Full Name', placeholder: 'John Doe', cols: 1 },
                     { key: 'phone', label: 'Phone Number', placeholder: '+91 XXXXX XXXXX', cols: 1 },
@@ -125,12 +123,13 @@ export default function CheckoutPage() {
                     { key: 'pincode', label: 'PIN Code', placeholder: '400001', cols: 1 },
                   ].map(field => (
                     <div key={field.key} className={field.cols === 2 ? 'md:col-span-2' : ''}>
-                      <label className="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">{field.label}</label>
+                      <label className="block text-xs text-[#4A4A4A] font-bold uppercase tracking-wider mb-2">{field.label}</label>
                       <input
                         value={address[field.key as keyof typeof address]}
                         onChange={e => setAddress(a => ({ ...a, [field.key]: e.target.value }))}
                         placeholder={field.placeholder}
-                        className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 placeholder-gray-600 transition-colors text-sm"
+                        className="w-full rounded-xl px-4 py-3 outline-none transition-colors text-sm font-medium"
+                        style={{ background: '#F4F1EA', border: '1.5px solid rgba(0,0,0,0.08)', color: '#111111' }}
                       />
                     </div>
                   ))}
@@ -146,7 +145,7 @@ export default function CheckoutPage() {
                     setAddress(newAddress);
                     setStep(1);
                   }} 
-                  className="btn-primary mt-8 w-full"
+                  className="btn-primary mt-8 w-full" style={{ padding: '14px' }}
                 >
                   Continue to Payment →
                 </button>
@@ -155,37 +154,38 @@ export default function CheckoutPage() {
 
             {/* Step 2: Payment */}
             {step === 1 && (
-              <div className="glass-card animate-slide-up">
-                <h2 className="text-2xl font-bold text-white mb-6">💳 Payment Method</h2>
+              <div className="animate-slide-up rounded-3xl p-8" style={{ background: '#FFFFFF', border: '1.5px solid rgba(0,0,0,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
+                <h2 className="text-2xl font-black text-[#111111] mb-6">💳 Payment Method</h2>
 
-                {/* Payment Options */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
                   {UPI_METHODS.map(m => (
                     <button key={m.id} onClick={() => setPayMethod(m.id)}
-                      className={`glass rounded-xl p-4 text-center transition-all border-2 flex flex-col items-center justify-center gap-2 ${payMethod === m.id ? 'border-amber-500 bg-amber-500/10' : 'border-white/10 hover:border-white/20'}`}>
+                      className="rounded-xl p-4 text-center transition-all flex flex-col items-center justify-center gap-2"
+                      style={{ 
+                        background: payMethod === m.id ? '#FFFBEB' : '#FFFFFF', 
+                        border: payMethod === m.id ? '2px solid #C5A059' : '1.5px solid rgba(0,0,0,0.08)' 
+                      }}>
                       <img src={m.icon} alt={m.label} className="h-8 object-contain rounded" />
-                      <div className="text-xs font-medium text-gray-300">{m.label}</div>
+                      <div className="text-xs font-bold" style={{ color: payMethod === m.id ? '#C5A059' : '#4A4A4A' }}>{m.label}</div>
                     </button>
                   ))}
                 </div>
 
-                {/* QR Code Panel */}
                 {payMethod === 'qr' && (
-                  <div className="glass rounded-2xl p-6 mb-6 border border-amber-500/20">
-                    <p className="text-sm text-gray-400 mb-2 text-center">Scan with any UPI app to pay</p>
-                    <div className="w-48 h-48 mx-auto rounded-2xl bg-white flex items-center justify-center mb-4 border-4 border-amber-500/40 overflow-hidden">
+                  <div className="rounded-2xl p-6 mb-6" style={{ background: '#F4F1EA', border: '1.5px solid rgba(0,0,0,0.08)' }}>
+                    <p className="text-sm font-bold text-[#4A4A4A] mb-4 text-center">Scan with any UPI app to pay</p>
+                    <div className="w-48 h-48 mx-auto rounded-2xl bg-white flex items-center justify-center mb-4 overflow-hidden" style={{ border: '3px solid #C5A059' }}>
                       <img 
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=8688509699@upi&pn=ShopSmart&am=${total.toFixed(2)}&cu=INR`)}`} 
                         alt="Dynamic QR Code" 
                         className="w-full h-full object-cover" 
                       />
                     </div>
-                    <p className="text-amber-400 font-mono font-bold text-sm text-center">8688509699@upi</p>
-                    <p className="text-gray-400 text-sm mt-1 font-semibold text-center">Amount: ₹{total.toFixed(2)}</p>
+                    <p className="font-mono font-bold text-sm text-center" style={{ color: '#C5A059' }}>8688509699@upi</p>
+                    <p className="text-[#111111] text-sm mt-1 font-black text-center">Amount: ₹{total.toFixed(2)}</p>
 
-                    {/* Transaction Reference Input */}
-                    <div className="mt-5 border-t border-white/10 pt-5">
-                      <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <div className="mt-6 pt-5" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                      <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#4A4A4A' }}>
                         Step 1 — Enter Full UPI Transaction ID
                       </label>
                       <input
@@ -194,21 +194,21 @@ export default function CheckoutPage() {
                         placeholder="e.g. 426710983654 (12 digits)"
                         maxLength={20}
                         inputMode="numeric"
-                        className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-amber-500 placeholder-gray-600 transition-colors text-sm font-mono tracking-widest"
+                        className="w-full rounded-xl px-4 py-3 outline-none transition-colors text-sm font-mono font-bold tracking-widest"
+                        style={{ background: '#FFFFFF', border: '1.5px solid rgba(0,0,0,0.15)', color: '#111111' }}
                       />
                       <div className="flex justify-between items-center mt-2">
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        <p className="text-xs font-medium text-[#6B7280]">
                           Find in your UPI app: Payment History → Transaction ID
                         </p>
-                        <p className="text-xs font-mono font-bold" style={{ color: txnRef.trim().length >= 12 ? '#4ADE80' : 'rgba(255,255,255,0.3)' }}>
+                        <p className="text-xs font-mono font-bold" style={{ color: txnRef.trim().length >= 12 ? '#16a34a' : '#9CA3AF' }}>
                           {txnRef.trim().length}/12
                         </p>
                       </div>
                     </div>
 
-                    {/* I've Paid button — enabled only after full 12-digit txnRef is entered */}
-                    <div className="mt-4">
-                      <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <div className="mt-5">
+                      <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#4A4A4A' }}>
                         Step 2 — Confirm Payment
                       </label>
                       {!paidNow ? (
@@ -216,10 +216,10 @@ export default function CheckoutPage() {
                           onClick={() => { if (txnRef.trim().length >= 12) setPaidNow(true); }}
                           disabled={txnRef.trim().length < 12}
                           style={{
-                            width: '100%', padding: '12px', borderRadius: 12, fontWeight: 700, fontSize: 14,
-                            border: txnRef.trim().length >= 12 ? '1px solid rgba(74,222,128,0.5)' : '1px solid rgba(255,255,255,0.1)',
-                            background: txnRef.trim().length >= 12 ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.04)',
-                            color: txnRef.trim().length >= 12 ? '#4ADE80' : 'rgba(255,255,255,0.25)',
+                            width: '100%', padding: '14px', borderRadius: 12, fontWeight: 700, fontSize: 14,
+                            border: txnRef.trim().length >= 12 ? '2px solid #16a34a' : '2px solid rgba(0,0,0,0.08)',
+                            background: txnRef.trim().length >= 12 ? '#DCFCE7' : '#FFFFFF',
+                            color: txnRef.trim().length >= 12 ? '#16a34a' : '#9CA3AF',
                             cursor: txnRef.trim().length >= 12 ? 'pointer' : 'not-allowed',
                             transition: 'all 0.2s ease',
                           }}
@@ -227,37 +227,36 @@ export default function CheckoutPage() {
                           {txnRef.trim().length >= 12 ? '✅ I\'ve Completed the Payment' : `🔒 Enter ${12 - txnRef.trim().length} more digit${12 - txnRef.trim().length !== 1 ? 's' : ''} to unlock`}
                         </button>
                       ) : (
-                        <div className="rounded-xl p-4 animate-fade-in" style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.3)' }}>
-                          <p style={{ color: '#4ADE80', fontWeight: 700, fontSize: 14, marginBottom: 4 }}>🎉 Transaction verified!</p>
-                          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>Ref: <span style={{ color: '#F59E0B', fontFamily: 'monospace' }}>{txnRef}</span> — Click "Confirm Paid Order" below.</p>
+                        <div className="rounded-xl p-4 animate-fade-in" style={{ background: '#DCFCE7', border: '1.5px solid #16a34a' }}>
+                          <p style={{ color: '#16a34a', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>🎉 Transaction verified!</p>
+                          <p style={{ color: '#166534', fontSize: 12, fontWeight: 600 }}>Ref: <span style={{ fontFamily: 'monospace' }}>{txnRef}</span> — Click "Confirm Paid Order" below.</p>
                         </div>
                       )}
                     </div>
                   </div>
                 )}
 
-                {/* UPI ID input */}
                 {payMethod === 'upi' && (
                   <div className="mb-6">
-                    <label className="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">Your UPI ID</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-[#4A4A4A]">Your UPI ID</label>
                     <input value={upiId} onChange={e => setUpiId(e.target.value)} placeholder="yourname@upi"
-                      className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 placeholder-gray-600 transition-colors text-sm"/>
+                      className="w-full rounded-xl px-4 py-3 outline-none transition-colors text-sm font-medium"
+                      style={{ background: '#F4F1EA', border: '1.5px solid rgba(0,0,0,0.08)', color: '#111111' }}/>
                   </div>
                 )}
 
-                {/* Screenshot upload */}
                 <div className="mb-6">
-                  <label className="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-[#4A4A4A]">
                     Upload Payment Screenshot URL
                   </label>
                   <input value={screenshot} onChange={e => setScreenshot(e.target.value)}
                     placeholder="https://your-screenshot-url.jpg"
-                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 placeholder-gray-600 transition-colors text-sm"/>
-                  <p className="text-gray-600 text-xs mt-2">In production, this uploads directly to Firebase Storage</p>
+                    className="w-full rounded-xl px-4 py-3 outline-none transition-colors text-sm font-medium"
+                    style={{ background: '#F4F1EA', border: '1.5px solid rgba(0,0,0,0.08)', color: '#111111' }}/>
                 </div>
 
                 <div className="flex gap-4">
-                  <button onClick={() => setStep(0)} className="btn-ghost border border-white/10 flex-1">← Back</button>
+                  <button onClick={() => setStep(0)} className="btn-ghost flex-1 font-bold" style={{ border: '1.5px solid rgba(0,0,0,0.1)', color: '#111111' }}>← Back</button>
                   <button onClick={() => setStep(2)} className="btn-primary flex-1">Review Order →</button>
                 </div>
               </div>
@@ -265,31 +264,26 @@ export default function CheckoutPage() {
 
             {/* Step 3: Confirm */}
             {step === 2 && (
-              <div className="glass-card animate-slide-up">
-                <h2 className="text-2xl font-bold text-white mb-6">📋 Review & Confirm</h2>
+              <div className="animate-slide-up rounded-3xl p-8" style={{ background: '#FFFFFF', border: '1.5px solid rgba(0,0,0,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
+                <h2 className="text-2xl font-black text-[#111111] mb-6">📋 Review & Confirm</h2>
                 <div className="space-y-4 mb-8">
-                  <div className="glass rounded-xl p-4">
-                    <p className="text-xs text-gray-500 mb-1">Delivery to</p>
-                    <p className="text-white font-medium">{address.name || 'John Doe'}</p>
-                    <p className="text-gray-400 text-sm">{address.address || '123 Main Street'}, {address.pincode || '400001'}</p>
+                  <div className="rounded-xl p-4" style={{ background: '#F4F1EA', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <p className="text-xs font-bold text-[#4A4A4A] mb-1">Delivery to</p>
+                    <p className="text-[#111111] font-black">{address.name || 'John Doe'}</p>
+                    <p className="text-[#4A4A4A] text-sm font-medium mt-1">{address.address || '123 Main Street'}, {address.pincode || '400001'}</p>
                   </div>
-                  <div className="glass rounded-xl p-4">
-                    <p className="text-xs text-gray-500 mb-1">Payment via</p>
-                    <p className="text-white font-medium">{UPI_METHODS.find(m => m.id === payMethod)?.label}</p>
+                  <div className="rounded-xl p-4" style={{ background: '#F4F1EA', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <p className="text-xs font-bold text-[#4A4A4A] mb-1">Payment via</p>
+                    <p className="text-[#111111] font-black">{UPI_METHODS.find(m => m.id === payMethod)?.label}</p>
                   </div>
-                  {screenshot && (
-                    <div className="glass rounded-xl p-4">
-                      <p className="text-xs text-gray-500 mb-1">Screenshot</p>
-                      <p className="text-indigo-400 text-sm font-mono truncate">{screenshot}</p>
-                    </div>
-                  )}
                 </div>
                 <div className="flex gap-4">
-                  <button onClick={() => setStep(1)} disabled={loading} className="btn-ghost border border-white/10 flex-1">← Back</button>
+                  <button onClick={() => setStep(1)} disabled={loading} className="btn-ghost flex-1 font-bold" style={{ border: '1.5px solid rgba(0,0,0,0.1)', color: '#111111' }}>← Back</button>
                   <button 
                     onClick={() => handleSubmit(paidNow)}
                     disabled={loading}
-                    className={`btn-primary flex-1 ${paidNow ? 'border-2 border-green-400' : ''} ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`btn-primary flex-1 ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    style={{ background: paidNow ? '#16a34a' : undefined }}
                   >
                     {loading
                       ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -305,18 +299,20 @@ export default function CheckoutPage() {
           </div>
 
           {/* Order Summary Sidebar */}
-          <div className="glass-card h-fit sticky top-24">
-            <h3 className="text-lg font-bold text-white mb-6">Order Summary</h3>
-            <div className="space-y-3 text-sm text-gray-400">
-              <div className="flex justify-between"><span>Subtotal</span><span className="text-white">₹{subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>Tax (18% GST)</span><span className="text-white">₹{tax.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>Shipping</span><span className="text-green-400">Free</span></div>
-              <div className="border-t border-white/10 pt-3 flex justify-between font-black text-lg">
-                <span className="text-white">Total</span>
-                <span className="gradient-text">₹{total.toFixed(2)}</span>
+          <div className="h-fit sticky top-24 rounded-3xl p-6" style={{ background: '#FFFFFF', border: '1.5px solid rgba(0,0,0,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
+            <h3 className="text-lg font-black text-[#111111] mb-6">Order Summary</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between font-medium"><span className="text-[#4A4A4A]">Subtotal</span><span className="text-[#111111] font-bold">₹{subtotal.toFixed(2)}</span></div>
+              <div className="flex justify-between font-medium"><span className="text-[#4A4A4A]">Tax (18% GST)</span><span className="text-[#111111] font-bold">₹{tax.toFixed(2)}</span></div>
+              <div className="flex justify-between font-medium"><span className="text-[#4A4A4A]">Shipping</span><span className="text-[#16a34a] font-bold">Free</span></div>
+              <div className="pt-4 flex justify-between font-black text-lg" style={{ borderTop: '1.5px solid rgba(0,0,0,0.08)' }}>
+                <span className="text-[#111111]">Total</span>
+                <span style={{ color: '#C5A059' }}>₹{total.toFixed(2)}</span>
               </div>
             </div>
-            <div className="mt-6 text-xs text-gray-600 text-center">🔒 256-bit SSL encryption</div>
+            <div className="mt-6 text-xs font-bold text-[#4A4A4A] text-center flex justify-center gap-1">
+              🔒 256-bit SSL encryption
+            </div>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     OrdersModule, 
     AuthModule,
     ChatModule,
-    NotificationsModule
+    NotificationsModule,
+    MailModule
   ],
 })
 export class AppModule {}

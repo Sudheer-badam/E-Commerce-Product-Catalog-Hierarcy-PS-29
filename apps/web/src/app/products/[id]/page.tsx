@@ -18,19 +18,37 @@ export default function ProductDetailsPage({ params }: { params: { id: string } 
   const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
-    fetch(`https://shop-smart-api-production.up.railway.app/products`)
-      .then(res => res.json())
-      .then(data => {
-        const found = data.find((p: any) => p.id === params.id);
-        if (found) {
-          // Mock tax/delivery logic for frontend display, real logic is in backend
-          found.tax = found.price * 0.18;
-          found.deliveryMethod = found.kind === 'PHYSICAL' ? 'Ships in 2-3 days' : 'Instant Delivery';
-          setProduct(found);
+    const urls = [
+      'https://shop-smart-api-production.up.railway.app',
+      process.env.NEXT_PUBLIC_API_URL,
+      'http://127.0.0.1:8080',
+    ].filter(Boolean) as string[];
+
+    const tryFetch = async () => {
+      for (const base of urls) {
+        try {
+          const controller = new AbortController();
+          const tid = setTimeout(() => controller.abort(), 15000);
+          const res = await fetch(`${base}/products`, { signal: controller.signal });
+          clearTimeout(tid);
+          if (res.ok) {
+            const data = await res.json();
+            const found = data.find((p: any) => p.id === params.id);
+            if (found) {
+              found.tax = found.price * 0.18;
+              found.deliveryMethod = found.kind === 'PHYSICAL' ? 'Ships in 2-3 days' : 'Instant Delivery';
+              setProduct(found);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch {
+          // try next
         }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      }
+      setLoading(false);
+    };
+    tryFetch();
   }, [params.id]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div></div>;
@@ -51,79 +69,83 @@ export default function ProductDetailsPage({ params }: { params: { id: string } 
     setTimeout(() => setAdded(false), 2000);
   };
 
-  const kindCapitalized = product.kind.charAt(0).toUpperCase() + product.kind.slice(1).toLowerCase();
+  const rawKind = product.kind || 'PHYSICAL';
+  const kindCapitalized = rawKind.charAt(0).toUpperCase() + rawKind.slice(1).toLowerCase();
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 animate-fade-in">
-      <Link href="/" className="btn-ghost text-sm mb-8 inline-flex items-center gap-2">
+    <div className="max-w-7xl mx-auto px-6 py-12 animate-fade-in relative z-10">
+      <Link href="/" className="btn-ghost text-sm mb-8 inline-flex items-center gap-2" style={{ color: '#3C3C3C', fontWeight: 600 }}>
         ← Back to Catalog
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
         {/* Image Panel */}
-        <div className="glass rounded-3xl h-96 flex items-center justify-center text-9xl sticky top-24 overflow-hidden" style={{ padding: '32px' }}>
+        <div style={{ background: '#FFFFFF', border: '1.5px solid rgba(0,0,0,0.09)', borderRadius: 24, height: 380, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 32, position: 'sticky', top: 96, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
           {product.image && typeof product.image === 'string' && product.image.startsWith('/') ? (
             <img src={encodeURI(product.image)} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '16px' }} />
           ) : (
-            product.image
+            <span style={{ fontSize: 96 }}>{product.image || '📦'}</span>
           )}
         </div>
 
         {/* Info Panel */}
-        <div>
-          <div className="flex items-center gap-3 mb-4">
+        <div style={{ background: '#FFFFFF', border: '1.5px solid rgba(0,0,0,0.09)', borderRadius: 24, padding: 32, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <span className={`badge border ${KIND_COLOR[kindCapitalized] || 'bg-gray-500/20 text-gray-400'}`}>
               {kindCapitalized} Product
             </span>
-            <span className="text-sm text-gray-500">{product.category}</span>
+            <span style={{ fontSize: 13, color: '#5C5C5C', fontWeight: 500 }}>{product.category}</span>
           </div>
 
-          <h1 className="text-4xl font-black text-white mb-4 leading-tight">{product.name}</h1>
+          <h1 style={{ fontSize: 32, fontWeight: 900, color: '#111111', marginBottom: 16, lineHeight: 1.2, letterSpacing: '-0.02em' }}>{product.name}</h1>
 
-          <div className="text-5xl font-black gradient-text mb-2">₹{product.price}</div>
+          <div style={{ fontSize: 42, fontWeight: 900, color: '#C5A059', marginBottom: 4, letterSpacing: '-0.03em' }}>₹{product.price}</div>
           {product.tax > 0 && (
-            <p className="text-gray-500 text-sm mb-6">+ ₹{product.tax.toFixed(2)} GST/Tax</p>
+            <p style={{ color: '#6B7280', fontSize: 13, marginBottom: 20 }}>+ ₹{product.tax.toFixed(2)} GST/Tax</p>
           )}
 
-          <p className="text-gray-400 text-lg leading-relaxed mb-8">{product.description}</p>
+          <p style={{ color: '#3C3C3C', fontSize: 16, lineHeight: 1.7, marginBottom: 24 }}>{product.description}</p>
 
-          {/* OOP Delivery Info */}
-          <div className="glass rounded-xl p-4 mb-8 border-l-4 border-indigo-500">
-            <p className="text-xs text-indigo-400 font-semibold uppercase tracking-wider mb-1">Delivery Method</p>
-            <p className="text-gray-300 text-sm">{product.deliveryMethod}</p>
+          {/* Delivery Info */}
+          <div style={{ background: '#F4F1EA', borderRadius: 12, padding: 16, marginBottom: 24, borderLeft: '4px solid #6366F1' }}>
+            <p style={{ fontSize: 11, color: '#6366F1', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Delivery Method</p>
+            <p style={{ color: '#1A1A1A', fontSize: 14, fontWeight: 600 }}>{product.deliveryMethod}</p>
             {product.weight > 0 && (
-              <p className="text-gray-500 text-xs mt-1">Weight: {product.weight}kg</p>
+              <p style={{ color: '#6B7280', fontSize: 12, marginTop: 4 }}>Weight: {product.weight}kg</p>
             )}
           </div>
 
           {/* Quantity */}
-          <div className="flex items-center gap-4 mb-8">
-            <span className="text-sm text-gray-400 font-medium">Quantity</span>
-            <div className="flex items-center glass rounded-xl overflow-hidden">
-              <button onClick={() => setQty(q => Math.max(1, q - 1))} className="px-4 py-3 hover:bg-white/10 transition-colors text-lg">−</button>
-              <span className="px-6 py-3 font-bold text-white border-x border-white/10">{qty}</span>
-              <button onClick={() => setQty(q => q + 1)} className="px-4 py-3 hover:bg-white/10 transition-colors text-lg">+</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+            <span style={{ fontSize: 14, color: '#3C3C3C', fontWeight: 600 }}>Quantity</span>
+            <div style={{ display: 'flex', alignItems: 'center', background: '#F4F1EA', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+              <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ padding: '12px 18px', fontSize: 18, fontWeight: 700, color: '#1A1A1A', background: 'transparent', border: 'none', cursor: 'pointer' }}>−</button>
+              <span style={{ padding: '12px 20px', fontWeight: 800, color: '#111111', fontSize: 16, borderLeft: '1px solid rgba(0,0,0,0.08)', borderRight: '1px solid rgba(0,0,0,0.08)' }}>{qty}</span>
+              <button onClick={() => setQty(q => q + 1)} style={{ padding: '12px 18px', fontSize: 18, fontWeight: 700, color: '#1A1A1A', background: 'transparent', border: 'none', cursor: 'pointer' }}>+</button>
             </div>
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button onClick={handleAddToCart}
-              className={`btn-primary flex-1 text-center flex items-center justify-center gap-2 transition-all ${added ? 'bg-green-600 from-green-600 to-green-600 shadow-green-500/25' : ''}`}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className="sm:flex-row">
+            <button
+              onClick={handleAddToCart}
+              className="btn-primary flex-1"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 24px', fontSize: 15, background: added ? '#16a34a' : undefined }}
+            >
               {added ? '✓ Added to Cart!' : '🛒 Add to Cart'}
             </button>
-            <Link href="/checkout" className="flex-1 text-center btn-ghost border border-white/20 text-white py-3 rounded-xl font-semibold hover:border-white/40">
+            <Link href="/checkout" style={{ flex: 1, textAlign: 'center', padding: '14px 24px', borderRadius: 12, border: '1.5px solid rgba(0,0,0,0.15)', color: '#1A1A1A', fontWeight: 700, fontSize: 15, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               Buy Now →
             </Link>
           </div>
 
           {/* Trust badges */}
-          <div className="grid grid-cols-3 gap-3 mt-10 text-center">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginTop: 24 }}>
             {[['🔒', 'Secure Payment'], ['↩️', 'Easy Returns'], ['⚡', 'Fast Support']].map(([icon, label]) => (
-              <div key={label} className="glass rounded-xl p-3">
-                <div className="text-xl mb-1">{icon}</div>
-                <div className="text-xs text-gray-500">{label}</div>
+              <div key={label} style={{ background: '#F4F1EA', borderRadius: 12, padding: 12, textAlign: 'center', border: '1px solid rgba(0,0,0,0.06)' }}>
+                <div style={{ fontSize: 20, marginBottom: 4 }}>{icon}</div>
+                <div style={{ fontSize: 11, color: '#3C3C3C', fontWeight: 600 }}>{label}</div>
               </div>
             ))}
           </div>
