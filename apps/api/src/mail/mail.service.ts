@@ -16,7 +16,7 @@ export class MailService {
     });
   }
 
-  async sendMail(to: string, subject: string, html: string) {
+  async sendMail(to: string, subject: string, text: string) {
     if (!to || to === 'N/A' || !to.includes('@')) {
       this.logger.warn(`Skipping email, invalid address: ${to}`);
       return false;
@@ -27,7 +27,7 @@ export class MailService {
         from: `"ShopSmart Admin" <${process.env.SMTP_USER || 'admin@shopsmart.com'}>`,
         to,
         subject,
-        html,
+        text,
       });
       this.logger.log(`Email sent: ${info.messageId}`);
       return true;

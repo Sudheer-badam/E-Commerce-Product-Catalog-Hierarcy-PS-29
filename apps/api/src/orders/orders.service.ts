@@ -103,17 +103,14 @@ export class OrdersService {
     const customerEmail = emailRaw ? emailRaw.replace('EMAIL:', '').trim() : null;
 
     if (customerEmail && customerEmail !== 'N/A') {
-      const html = `
-        <div style="font-family: sans-serif; padding: 20px;">
-          <h2>Your Order is on its way! 📦</h2>
-          <p>Great news! Your order <b>#${orderId.substr(0, 8).toUpperCase()}</b> has been dispatched and is on its way to you.</p>
-          <p>You can track your order status in your ShopSmart dashboard.</p>
-          <br/>
-          <p>Thank you for shopping with us!</p>
-          <p>- The ShopSmart Team</p>
-        </div>
-      `;
-      await this.mailService.sendMail(customerEmail, 'ShopSmart: Your Order has been Dispatched!', html);
+      const text = `Your Order is on its way! 📦
+
+Great news! Your order #${orderId.substr(0, 8).toUpperCase()} has been dispatched and is on its way to you.
+You can track your order status in your ShopSmart dashboard.
+
+Thank you for shopping with us!
+- The ShopSmart Team`;
+      await this.mailService.sendMail(customerEmail, 'ShopSmart: Your Order has been Dispatched!', text);
     }
 
     return updatedOrder;
@@ -155,48 +152,27 @@ export class OrdersService {
 
     // Send email to customer
     if (email && email !== 'N/A') {
-      const itemsHtml = ((order.items as any[]) || []).map(item => 
-        `<tr>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name || item.id} × ${item.quantity}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">₹${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</td>
-        </tr>`
-      ).join('');
+      const itemsText = ((order.items as any[]) || []).map(item => 
+        `- ${item.name || item.id} × ${item.quantity}: ₹${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`
+      ).join('\n');
 
-      const html = `
-        <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px;">
-          <h2 style="color: #F59E0B; text-align: center;">ShopSmart Invoice</h2>
-          <p style="text-align: center;">Order #${invoiceData.shortId}</p>
-          <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;" />
-          
-          <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr>
-                <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">Item</th>
-                <th style="text-align: right; padding: 8px; border-bottom: 2px solid #ddd;">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td style="padding: 12px 8px; font-weight: bold; text-align: right;">Total Paid:</td>
-                <td style="padding: 12px 8px; font-weight: bold; text-align: right; color: #4ADE80;">₹${order.totalAmount.toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
+      const text = `ShopSmart Invoice
+Order #${invoiceData.shortId}
+----------------------------------------
 
-          <div style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 6px;">
-            <p style="margin: 5px 0;"><strong>Customer:</strong> ${name}</p>
-            <p style="margin: 5px 0;"><strong>Address:</strong> ${address}</p>
-            <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${method}</p>
-            <p style="margin: 5px 0;"><strong>Transaction ID:</strong> ${txnId}</p>
-          </div>
+Items Ordered:
+${itemsText}
 
-          <p style="text-align: center; margin-top: 30px; font-size: 14px; color: #777;">Thank you for your purchase!</p>
-        </div>
-      `;
-      await this.mailService.sendMail(email, `Your ShopSmart Invoice (Order #${invoiceData.shortId})`, html);
+Total Paid: ₹${order.totalAmount.toFixed(2)}
+
+----------------------------------------
+Customer: ${name}
+Address: ${address}
+Payment Method: ${method}
+Transaction ID: ${txnId}
+
+Thank you for your purchase!`;
+      await this.mailService.sendMail(email, `Your ShopSmart Invoice (Order #${invoiceData.shortId})`, text);
     }
 
     return { success: true, invoiceData };
