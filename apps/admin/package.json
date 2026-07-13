@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@smart-ecommerce/shared": "*",
     "axios": "^1.18.1",
     "chart.js": "^4.4.2",
     "firebase": "^12.15.0",
