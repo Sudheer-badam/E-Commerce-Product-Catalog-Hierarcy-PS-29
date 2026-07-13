@@ -1,7 +1,7 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth, googleProvider } from '../../firebase/config';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { useAuthStore } from '../../store/useAuthStore';
 
 const PLAYLIST = [
@@ -72,19 +72,35 @@ export default function LoginPage() {
   const [phone, setPhone]     = useState('');
   const { login } = useAuthStore();
 
+  // Handle the redirect result when user comes back from Google
+  useEffect(() => {
+    const savedPhone = sessionStorage.getItem('login_phone');
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          const u = result.user;
+          login({ uid: u.uid, name: u.displayName, email: u.email, photoURL: u.photoURL, phoneNumber: savedPhone || '' });
+          sessionStorage.removeItem('login_phone');
+          window.location.href = '/';
+        }
+      })
+      .catch((err) => {
+        setError(err.message || 'Google sign-in failed. Please try again.');
+      });
+  }, [login]);
+
   const handleGoogleLogin = async () => {
     if (!phone) { setError('Please enter your phone number first.'); return; }
     setLoading(true);
     setError('');
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const u = result.user;
-      login({ uid: u.uid, name: u.displayName, email: u.email, photoURL: u.photoURL, phoneNumber: phone });
-      window.location.href = '/';
+      // Save phone to session so we can retrieve it after redirect
+      sessionStorage.setItem('login_phone', phone);
+      await signInWithRedirect(auth, googleProvider);
     } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user')
-        setError(err.message || 'Google sign-in failed. Please try again.');
-    } finally { setLoading(false); }
+      setError(err.message || 'Google sign-in failed. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
