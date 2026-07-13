@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase/config';
 
 const ALLOWED_EMAIL = 'badamsudheerreddy@gmail.com';
@@ -27,20 +27,29 @@ export default function AdminAuthGuard({ children }: { children: React.ReactNode
     return () => unsub();
   }, []);
 
+  // Handle redirect result when returning from Google sign-in
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          if (result.user.email?.toLowerCase() !== ALLOWED_EMAIL) {
+            signOut(auth);
+            setError('Access denied. Only badamsudheerreddy@gmail.com can access this panel.');
+          }
+        }
+      })
+      .catch(() => {
+        setError('Sign-in failed. Please try again.');
+      });
+  }, []);
+
   const handleGoogleSignIn = async () => {
     setSigning(true);
     setError('');
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      if (result.user.email?.toLowerCase() !== ALLOWED_EMAIL) {
-        await signOut(auth);
-        setError('Access denied. Only badamsudheerreddy@gmail.com can access this panel.');
-      }
+      await signInWithRedirect(auth, googleProvider);
     } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setError('Sign-in failed. Please try again.');
-      }
-    } finally {
+      setError('Sign-in failed. Please try again.');
       setSigning(false);
     }
   };
