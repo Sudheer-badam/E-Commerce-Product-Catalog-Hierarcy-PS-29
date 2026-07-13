@@ -7,46 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ProductKind {
-  PHYSICAL
-  DIGITAL
-  SUBSCRIPTION
-}
-
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  price       Float
-  image       String
-  category    String
-  description String?
-  stock       Int         @default(0)
-  
-  // Discriminator
-  kind        ProductKind
-
-  // Specific to Physical
-  weight        String?
+  id             String      @id @default(cuid())
+  name           String
+  price          Float
+  image          String
+  category       String
+  description    String?
+  stock          Int         @default(0)
+  kind           ProductKind
+  weight         String?
   deliveryCharge Float?
-
-  // Specific to Digital
-  licenseKey    String?
-  downloadUrl   String?
-
-  // Specific to Subscription
-  renewalPeriod String? // e.g. "Monthly", "Yearly"
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  licenseKey     String?
+  downloadUrl    String?
+  renewalPeriod  String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 }
 
 model Order {
   id                   String   @id @default(cuid())
   customerId           String
-  items                Json     // Array of items { id, quantity, price }
+  items                Json
   totalAmount          Float
-  paymentStatus        String   @default("Pending") // Pending, Paid, Rejected
-  orderStatus          String   @default("Pending") // Pending, Confirmed, Shipped, Delivered
+  paymentStatus        String   @default("Pending")
+  orderStatus          String   @default("Pending")
   paymentScreenshotUrl String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -54,8 +39,14 @@ model Order {
 
 model ChatMessage {
   id        String   @id @default(cuid())
-  sender    String   // 'Customer' or 'Admin'
+  sender    String
   text      String
   room      String   @default("support_room")
   createdAt DateTime @default(now())
+}
+
+enum ProductKind {
+  PHYSICAL
+  DIGITAL
+  SUBSCRIPTION
 }

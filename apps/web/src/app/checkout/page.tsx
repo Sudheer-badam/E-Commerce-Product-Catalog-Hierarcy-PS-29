@@ -29,7 +29,7 @@ export default function CheckoutPage() {
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
 
-  const [address, setAddress] = useState({ name: user?.name || '', phone: user?.phoneNumber || '', pincode: '', address: '' });
+  const [address, setAddress] = useState({ name: user?.name || '', phone: user?.phoneNumber || '', email: user?.email || '', pincode: '', address: '' });
 
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const tax = subtotal * 0.18;
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
       const selectedMethodName = UPI_METHODS.find(m => m.id === payMethod)?.label || payMethod;
       const txnSuffix = txnRef ? ` | TXN:${txnRef}` : '';
       const addressStr = [address.address, address.pincode].filter(v => v && v !== 'N/A').join(', ') || 'N/A';
-      const customerStr = `${address.name || user?.name || 'N/A'} | ${address.phone || 'N/A'} | ${selectedMethodName} | ADDR:${addressStr}${txnSuffix} | EMAIL:${user?.email || 'N/A'}`;
+      const customerStr = `${address.name || user?.name || 'N/A'} | ${address.phone || 'N/A'} | ${selectedMethodName} | ADDR:${addressStr}${txnSuffix} | EMAIL:${address.email || 'N/A'}`;
       
       const res = await fetch('https://shop-smart-api-production.up.railway.app/orders', {
         method: 'POST',
@@ -119,6 +119,7 @@ export default function CheckoutPage() {
                   {[
                     { key: 'name', label: 'Full Name', placeholder: 'John Doe', cols: 1 },
                     { key: 'phone', label: 'Phone Number', placeholder: '+91 XXXXX XXXXX', cols: 1 },
+                    { key: 'email', label: 'Email Address (For Invoice)', placeholder: 'john@example.com', cols: 2 },
                     { key: 'address', label: 'Street Address', placeholder: '123 Main Street, Apt 4B', cols: 2 },
                     { key: 'pincode', label: 'PIN Code', placeholder: '400001', cols: 1 },
                   ].map(field => (

@@ -101,16 +101,21 @@ export class OrdersService {
     const parts = order.customerId.split(' | ');
     const emailRaw = parts.find((p: string) => p.startsWith('EMAIL:'));
     const customerEmail = emailRaw ? emailRaw.replace('EMAIL:', '').trim() : null;
+    console.log(`[DISPATCH EMAIL] orderId=${orderId} | found email: ${customerEmail}`);
 
     if (customerEmail && customerEmail !== 'N/A') {
-      const text = `Your Order is on its way! 📦
+      const text = `Your Order is on its way!
 
 Great news! Your order #${orderId.substr(0, 8).toUpperCase()} has been dispatched and is on its way to you.
 You can track your order status in your ShopSmart dashboard.
 
 Thank you for shopping with us!
 - The ShopSmart Team`;
-      await this.mailService.sendMail(customerEmail, 'ShopSmart: Your Order has been Dispatched!', text);
+      console.log(`[DISPATCH EMAIL] Attempting to send email to: ${customerEmail}`);
+      const result = await this.mailService.sendMail(customerEmail, 'ShopSmart: Your Order has been Dispatched!', text);
+      console.log(`[DISPATCH EMAIL] sendMail result: ${result}`);
+    } else {
+      console.log(`[DISPATCH EMAIL] Skipping email - no valid email found in customerId`);
     }
 
     return updatedOrder;
@@ -151,9 +156,10 @@ Thank you for shopping with us!
     this.chatGateway.broadcastInvoice(invoiceData);
 
     // Send email to customer
+    console.log(`[INVOICE EMAIL] orderId=${orderId} | found email: ${email}`);
     if (email && email !== 'N/A') {
       const itemsText = ((order.items as any[]) || []).map(item => 
-        `- ${item.name || item.id} × ${item.quantity}: ₹${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`
+        `- ${item.name || item.id} x ${item.quantity}: Rs.${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`
       ).join('\n');
 
       const text = `ShopSmart Invoice
@@ -163,7 +169,7 @@ Order #${invoiceData.shortId}
 Items Ordered:
 ${itemsText}
 
-Total Paid: ₹${order.totalAmount.toFixed(2)}
+Total Paid: Rs.${order.totalAmount.toFixed(2)}
 
 ----------------------------------------
 Customer: ${name}
@@ -172,7 +178,11 @@ Payment Method: ${method}
 Transaction ID: ${txnId}
 
 Thank you for your purchase!`;
-      await this.mailService.sendMail(email, `Your ShopSmart Invoice (Order #${invoiceData.shortId})`, text);
+      console.log(`[INVOICE EMAIL] Attempting to send invoice email to: ${email}`);
+      const result = await this.mailService.sendMail(email, `Your ShopSmart Invoice (Order #${invoiceData.shortId})`, text);
+      console.log(`[INVOICE EMAIL] sendMail result: ${result}`);
+    } else {
+      console.log(`[INVOICE EMAIL] Skipping - no valid email found in customerId`);
     }
 
     return { success: true, invoiceData };
