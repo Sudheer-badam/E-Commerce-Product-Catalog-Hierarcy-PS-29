@@ -48,7 +48,9 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('https://shop-smart-api-production.up.railway.app/orders');
+      const res = await fetch('https://shop-smart-api-production.up.railway.app/orders', {
+        cache: 'no-store'
+      });
       const data = await res.json();
       setOrders(Array.isArray(data) ? data : []);
     } catch (e) { console.error(e); }
