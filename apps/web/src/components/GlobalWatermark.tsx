@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const PLAYLIST = [
   "5889465-uhd_3840_2160_25fps.mp4",
@@ -25,6 +25,43 @@ const PLAYLIST = [
 ];
 
 export default function GlobalWatermark() {
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  if (!mounted) return null;
+
+  if (isMobile) {
+    return (
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: -10,
+        opacity: 0.55,
+        pointerEvents: 'none',
+        overflow: 'hidden'
+      }}>
+        <video 
+          autoPlay 
+          muted 
+          loop
+          playsInline 
+          src={`/videos/${PLAYLIST[0]}`} 
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{
       position: 'fixed',
@@ -47,11 +84,7 @@ export default function GlobalWatermark() {
           loop
           playsInline 
           src={`/videos/${vid}`} 
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            objectFit: 'cover'
-          }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
       ))}
     </div>

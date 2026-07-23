@@ -27,43 +27,9 @@ const PLAYLIST = [
   "5836561-uhd_2160_3840_30fps (1).mp4",
 ];
 
-/* ─── 4-column mosaic with two rows scroll ─── */
+/* ─── VideoMosaic disabled to prevent hanging and overlap with GlobalWatermark ─── */
 function VideoMosaic() {
-  return (
-    <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'repeat(5, 1fr)', gap: 3, overflow: 'hidden' }}>
-      <style>{`
-        @keyframes mosaicFloat {
-          0%,100% { transform: translateY(0px); }
-          50%      { transform: translateY(-6px); }
-        }
-      `}</style>
-      {PLAYLIST.map((vid, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'relative',
-            borderRadius: 6,
-            overflow: 'hidden',
-            background: '#0a0a0f',
-            border: '1px solid rgba(197,160,89,0.15)',
-            animation: `mosaicFloat ${3 + (i % 5) * 0.4}s ${(i * 0.15) % 2}s ease-in-out infinite`,
-          }}
-        >
-          <video
-            src={`/videos/${vid}`}
-            autoPlay muted loop playsInline
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.88 }}
-          />
-          {/* Gold shimmer overlay */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(135deg, rgba(197,160,89,0.08) 0%, transparent 60%)',
-            pointerEvents: 'none',
-          }} />
-        </div>
-      ))}
-    </div>
-  );
+  return null;
 }
 
 export default function LoginPage() {
