@@ -5,6 +5,7 @@ import Link from 'next/link';
 const NAV_LINKS = [
   { href: '/#catalog', label: 'Shop' },
   { href: '/products', label: 'Collections' },
+  { href: '/orders', label: 'Orders' },
   { href: '/cart', label: 'Cart' },
   { href: '/support', label: 'Support' },
 ];

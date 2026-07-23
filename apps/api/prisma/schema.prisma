@@ -33,6 +33,7 @@ model Order {
   paymentStatus        String   @default("Pending")
   orderStatus          String   @default("Pending")
   paymentScreenshotUrl String?
+  trackingId           String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 }

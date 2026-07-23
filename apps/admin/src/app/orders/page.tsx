@@ -181,6 +181,11 @@ export default function OrdersPage() {
                     <span className={`badge ${ORDER_BADGE[order.orderStatus] || 'badge-gray'}`}>
                       {order.orderStatus}
                     </span>
+                    {order.trackingId && (
+                      <div style={{ marginTop: 6, fontSize: 11, fontFamily: 'monospace', color: 'var(--amber)', background: 'rgba(245,158,11,0.1)', padding: '2px 6px', borderRadius: 4, display: 'inline-block' }}>
+                        🚚 {order.trackingId}
+                      </div>
+                    )}
                   </td>
                   <td style={{ padding: '14px 20px' }}>
                     {order.paymentStatus === 'Pending' && order.paymentScreenshotUrl ? (

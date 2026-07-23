@@ -71,16 +71,21 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new NotFoundException('Order not found');
 
+    const trackingId = `TRK-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
-      data: { orderStatus: 'Shipped' }
+      data: { 
+        orderStatus: 'Shipped',
+        trackingId: trackingId
+      }
     });
 
     // Notify customer via Chat
     const chatMsg = await this.prisma.chatMessage.create({
       data: {
         sender: 'System',
-        text: `📦 Great news! Your order #${orderId.substr(0, 8).toUpperCase()} has been dispatched and is on its way.`,
+        text: `📦 Great news! Your order #${orderId.substr(0, 8).toUpperCase()} has been dispatched. Tracking ID: ${trackingId}`,
         room: 'support_room',
       }
     });
@@ -94,7 +99,8 @@ export class OrdersService {
 
     this.chatGateway.server.emit('dispatch_alert', { 
       orderId, 
-      shortId: orderId.substr(0, 8).toUpperCase() 
+      shortId: orderId.substr(0, 8).toUpperCase(),
+      trackingId
     });
 
     // Send email notification
@@ -107,6 +113,8 @@ export class OrdersService {
       const text = `Your Order is on its way!
 
 Great news! Your order #${orderId.substr(0, 8).toUpperCase()} has been dispatched and is on its way to you.
+Tracking ID: ${trackingId}
+
 You can track your order status in your ShopSmart dashboard.
 
 Thank you for shopping with us!
@@ -119,6 +127,17 @@ Thank you for shopping with us!
     }
 
     return updatedOrder;
+  }
+
+  async findByUser(uid: string) {
+    return this.prisma.order.findMany({
+      where: {
+        customerId: {
+          contains: `UID:${uid}`
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   async sendInvoice(orderId: string) {

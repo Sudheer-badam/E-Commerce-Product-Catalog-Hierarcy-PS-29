@@ -76,6 +76,13 @@ export default function UserMenu() {
               🛒 My Cart
             </a>
 
+            <a href="/orders" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 8, fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none', transition: 'all 0.15s', marginBottom: 4 }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            >
+              📦 My Orders
+            </a>
+
             <button onClick={handleSignOut} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 13, color: '#F87171', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}

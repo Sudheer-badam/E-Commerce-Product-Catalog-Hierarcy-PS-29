@@ -41,7 +41,7 @@ export default function CheckoutPage() {
       const selectedMethodName = UPI_METHODS.find(m => m.id === payMethod)?.label || payMethod;
       const txnSuffix = txnRef ? ` | TXN:${txnRef}` : '';
       const addressStr = [address.address, address.pincode].filter(v => v && v !== 'N/A').join(', ') || 'N/A';
-      const customerStr = `${address.name || user?.name || 'N/A'} | ${address.phone || 'N/A'} | ${selectedMethodName} | ADDR:${addressStr}${txnSuffix} | EMAIL:${address.email || 'N/A'}`;
+      const customerStr = `${address.name || user?.name || 'N/A'} | ${address.phone || 'N/A'} | ${selectedMethodName} | ADDR:${addressStr}${txnSuffix} | EMAIL:${address.email || 'N/A'} | UID:${user?.uid || 'guest'}`;
       
       const res = await fetch('https://shop-smart-api-production.up.railway.app/orders', {
         method: 'POST',

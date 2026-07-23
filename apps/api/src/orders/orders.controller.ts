@@ -30,6 +30,11 @@ export class OrdersController {
     return await this.ordersService.sendInvoice(id);
   }
 
+  @Get('user/:uid')
+  async getOrdersByUser(@Param('uid') uid: string) {
+    return await this.ordersService.findByUser(uid);
+  }
+
   @Get()
   async getAllOrders() {
     return await this.ordersService.findAll();

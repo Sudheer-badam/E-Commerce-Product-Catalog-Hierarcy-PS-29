@@ -1,0 +1,13 @@
+.git
+node_modules
+apps/api/node_modules
+apps/web/node_modules
+apps/admin/node_modules
+.next
+apps/web/.next
+apps/admin/.next
+dist
+apps/api/dist
+*.mp4
+**/*.mp4
+apps/web/public/videos
