@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Product, PhysicalProduct, DigitalProduct, SubscriptionProduct } from '@smart-ecommerce/shared';
+import { Product, PhysicalProduct, DigitalProduct, SubscriptionProduct } from './entities/product.entity';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
