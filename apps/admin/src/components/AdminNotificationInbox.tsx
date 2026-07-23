@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { io, Socket } from 'socket.io-client';
 
 interface NotificationItem {
@@ -15,8 +16,11 @@ export default function AdminNotificationInbox() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [toastQueue, setToastQueue] = useState<NotificationItem[]>([]);
+  const [mounted, setMounted] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const audioRef = useRef<AudioContext | null>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem('shopsmart_admin_notifications');
@@ -144,7 +148,7 @@ export default function AdminNotificationInbox() {
         </div>
       )}
 
-      {typeof window !== 'undefined' && document.body ? React.createPortal(
+      {mounted && toastQueue.length > 0 && createPortal(
         <div style={{ position: 'fixed', top: 96, right: 24, zIndex: 999999, display: 'flex', flexDirection: 'column', gap: 12, pointerEvents: 'none' }}>
           {toastQueue.map(toast => (
             <div key={toast.id} style={{ width: 320, background: '#16213e', border: '1px solid rgba(245,158,11,0.5)', borderRadius: 12, padding: 16, boxShadow: '0 20px 40px rgba(0,0,0,0.5)', pointerEvents: 'auto', animation: 'slide-left 0.3s ease-out' }}>
@@ -165,7 +169,8 @@ export default function AdminNotificationInbox() {
           ))}
         </div>,
         document.body
-      ) : null}
+      )}
     </div>
   );
 }
+
