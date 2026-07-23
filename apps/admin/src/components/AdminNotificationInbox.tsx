@@ -144,25 +144,28 @@ export default function AdminNotificationInbox() {
         </div>
       )}
 
-      <div style={{ position: 'fixed', top: 96, right: 24, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 12, pointerEvents: 'none' }}>
-        {toastQueue.map(toast => (
-          <div key={toast.id} style={{ width: 320, background: '#16213e', border: '1px solid rgba(245,158,11,0.5)', borderRadius: 12, padding: 16, boxShadow: '0 20px 40px rgba(0,0,0,0.5)', pointerEvents: 'auto', animation: 'slide-left 0.3s ease-out' }}>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-                🔔
+      {typeof window !== 'undefined' && document.body ? React.createPortal(
+        <div style={{ position: 'fixed', top: 96, right: 24, zIndex: 999999, display: 'flex', flexDirection: 'column', gap: 12, pointerEvents: 'none' }}>
+          {toastQueue.map(toast => (
+            <div key={toast.id} style={{ width: 320, background: '#16213e', border: '1px solid rgba(245,158,11,0.5)', borderRadius: 12, padding: 16, boxShadow: '0 20px 40px rgba(0,0,0,0.5)', pointerEvents: 'auto', animation: 'slide-left 0.3s ease-out' }}>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+                  🔔
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#F59E0B', marginBottom: 4 }}>{toast.title}</p>
+                  <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{toast.message}</p>
+                  <a href="/orders" style={{ display: 'inline-block', marginTop: 12, fontSize: 11, fontWeight: 700, color: '#F59E0B', background: 'rgba(245,158,11,0.1)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', border: '1px solid rgba(245,158,11,0.2)' }}>
+                    View Orders
+                  </a>
+                </div>
+                <button onClick={() => setToastQueue(q => q.filter(t => t.id !== toast.id))} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', alignSelf: 'flex-start' }}>✕</button>
               </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#F59E0B', marginBottom: 4 }}>{toast.title}</p>
-                <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{toast.message}</p>
-                <a href="/orders" style={{ display: 'inline-block', marginTop: 12, fontSize: 11, fontWeight: 700, color: '#F59E0B', background: 'rgba(245,158,11,0.1)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', border: '1px solid rgba(245,158,11,0.2)' }}>
-                  View Orders
-                </a>
-              </div>
-              <button onClick={() => setToastQueue(q => q.filter(t => t.id !== toast.id))} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', alignSelf: 'flex-start' }}>✕</button>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>,
+        document.body
+      ) : null}
     </div>
   );
 }

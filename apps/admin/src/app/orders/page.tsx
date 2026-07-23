@@ -76,6 +76,22 @@ export default function OrdersPage() {
     } catch (e) { console.error(e); }
   };
 
+  const markDelivered = async (id: string) => {
+    try {
+      await fetch(`https://shop-smart-api-production.up.railway.app/orders/${id}/deliver`, { method: 'PATCH' });
+      setOrders(o => o.map(order => order.id === id ? { ...order, orderStatus: 'Delivered' } : order));
+    } catch (e) { console.error(e); }
+  };
+
+  const enableReturn = async (id: string) => {
+    try {
+      await fetch(`https://shop-smart-api-production.up.railway.app/orders/${id}/enable-return`, { method: 'PATCH' });
+      setOrders(o => o.map(order => order.id === id ? { ...order, isReturnEnabled: true } : order));
+      setToast('✅ Returns enabled for this order!');
+      setTimeout(() => setToast(''), 3000);
+    } catch (e) { console.error(e); }
+  };
+
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 28, position: 'relative' }}>
       <AdminInvoiceModal 
@@ -212,11 +228,35 @@ export default function OrdersPage() {
                           📄 View Invoice
                         </button>
                       </div>
-                    ) : order.orderStatus === 'Shipped' || order.orderStatus === 'Delivered' ? (
-                      <button onClick={() => setSelectedInvoiceOrder(order)}
-                        style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 600 }}>
-                        📄 View Invoice
-                      </button>
+                    ) : order.orderStatus === 'Shipped' ? (
+                      <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
+                        <button onClick={() => markDelivered(order.id)}
+                          className="btn-primary" style={{ fontSize: 12, padding: '6px 14px', background: '#16a34a', color: '#fff' }}>
+                          ✅ Mark Delivered
+                        </button>
+                        <button onClick={() => setSelectedInvoiceOrder(order)}
+                          style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 600 }}>
+                          📄 View Invoice
+                        </button>
+                      </div>
+                    ) : order.orderStatus === 'Delivered' ? (
+                      <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
+                        {!order.isReturnEnabled && (
+                          <button onClick={() => enableReturn(order.id)}
+                            style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8, background: 'rgba(167,139,250,0.1)', color: '#A78BFA', border: '1px solid rgba(167,139,250,0.2)', cursor: 'pointer', fontWeight: 600 }}>
+                            🔄 Enable Return
+                          </button>
+                        )}
+                        {order.isReturnEnabled && (
+                          <span style={{ fontSize: 12, color: '#A78BFA', fontWeight: 600, textAlign: 'center' }}>Returns Allowed</span>
+                        )}
+                        <button onClick={() => setSelectedInvoiceOrder(order)}
+                          style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 600 }}>
+                          📄 View Invoice
+                        </button>
+                      </div>
+                    ) : order.orderStatus === 'Return Requested' ? (
+                      <span style={{ fontSize: 12, color: '#A78BFA', fontWeight: 'bold' }}>Return Pending</span>
                     ) : (
                       <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>—</span>
                     )}

@@ -31,6 +31,21 @@ export default function UserOrdersPage() {
     fetchOrders();
   }, [user, router]);
 
+  const requestReturn = async (orderId: string) => {
+    try {
+      const res = await fetch(`https://shop-smart-api-production.up.railway.app/orders/${orderId}/request-return`, { method: 'PATCH' });
+      if (res.ok) {
+        setOrders(o => o.map(order => order.id === orderId ? { ...order, orderStatus: 'Return Requested' } : order));
+        alert('Return request submitted successfully!');
+      } else {
+        alert('Could not submit return request. Please contact support.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('An error occurred. Please try again.');
+    }
+  };
+
   if (loading || user === undefined) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
@@ -98,13 +113,30 @@ export default function UserOrdersPage() {
                     {/* Status */}
                     <div className="space-y-6">
                       <div>
-                        <h3 className="text-sm font-bold text-[#111111] mb-3 uppercase tracking-wider">Order Status</h3>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold" 
-                          style={{ 
-                            background: order.orderStatus === 'Shipped' || order.orderStatus === 'Delivered' ? '#DCFCE7' : order.orderStatus === 'Cancelled' ? '#FEE2E2' : '#F3F4F6',
-                            color: order.orderStatus === 'Shipped' || order.orderStatus === 'Delivered' ? '#166534' : order.orderStatus === 'Cancelled' ? '#991B1B' : '#374151'
-                          }}>
-                          {order.orderStatus === 'Shipped' ? '📦 Shipped' : order.orderStatus === 'Delivered' ? '✅ Delivered' : order.orderStatus === 'Confirmed' ? '👍 Confirmed' : order.orderStatus === 'Cancelled' ? '❌ Cancelled' : '⏳ Processing'}
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="text-sm font-bold text-[#111111] mb-3 uppercase tracking-wider">Order Status</h3>
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold" 
+                              style={{ 
+                                background: order.orderStatus === 'Shipped' || order.orderStatus === 'Delivered' ? '#DCFCE7' : order.orderStatus === 'Cancelled' ? '#FEE2E2' : '#F3F4F6',
+                                color: order.orderStatus === 'Shipped' || order.orderStatus === 'Delivered' ? '#166534' : order.orderStatus === 'Cancelled' ? '#991B1B' : '#374151'
+                              }}>
+                              {order.orderStatus === 'Shipped' ? '📦 Shipped' : order.orderStatus === 'Delivered' ? '✅ Delivered' : order.orderStatus === 'Confirmed' ? '👍 Confirmed' : order.orderStatus === 'Cancelled' ? '❌ Cancelled' : order.orderStatus === 'Return Requested' ? '🔄 Return Pending' : '⏳ Processing'}
+                            </div>
+                          </div>
+                          {order.orderStatus === 'Delivered' && order.isReturnEnabled && (
+                            <button 
+                              onClick={() => {
+                                if (window.confirm('Are you sure you want to request a return for this order?')) {
+                                  requestReturn(order.id);
+                                }
+                              }}
+                              className="px-4 py-2 rounded-xl text-sm font-bold transition-colors hover:opacity-80"
+                              style={{ border: '2px solid #C5A059', color: '#C5A059', background: 'transparent' }}
+                            >
+                              Request Return
+                            </button>
+                          )}
                         </div>
                         
                         {order.trackingId && (

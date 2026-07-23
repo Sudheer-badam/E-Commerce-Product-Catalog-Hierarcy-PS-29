@@ -129,6 +129,55 @@ Thank you for shopping with us!
     return updatedOrder;
   }
 
+  async deliverOrder(orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('Order not found');
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { orderStatus: 'Delivered' }
+    });
+    return updatedOrder;
+  }
+
+  async enableReturn(orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('Order not found');
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { isReturnEnabled: true }
+    });
+    return updatedOrder;
+  }
+
+  async requestReturn(orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('Order not found');
+
+    if (order.orderStatus !== 'Delivered') {
+      throw new Error('Order must be delivered to request a return.');
+    }
+    if (!order.isReturnEnabled) {
+      throw new Error('Returns are not enabled for this order.');
+    }
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { orderStatus: 'Return Requested' }
+    });
+    
+    // Notify admin
+    this.chatGateway.server.emit('admin_alert', {
+      orderId: order.id,
+      shortId: order.id.substr(0, 8).toUpperCase(),
+      title: 'Return Requested',
+      message: `Customer requested a return for Order #${order.id.substr(0, 8).toUpperCase()}`,
+    });
+
+    return updatedOrder;
+  }
+
   async findByUser(uid: string) {
     return this.prisma.order.findMany({
       where: {
